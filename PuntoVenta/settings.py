@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', default='your secret key')
+#SECRET_KEY = 'django-insecure-0ogtjg%@6(go%ybegrx!7@wcmv6#%p_84^nfu2-qaddmppmq6d'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
@@ -102,6 +103,13 @@ DATABASES = {
         conn_max_age=600
     )
 }
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'dbTienda.sqlite3',
+#    }
+#}
 
 
 
