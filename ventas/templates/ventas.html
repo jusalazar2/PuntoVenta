@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'index/css/b4.css' %}">
+<script src="{% static 'index/js/b4.js' %}"></script>
+
+
+<div id="AgregarPersonalModal" class="modal" style="overflow: scroll;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <h5 class="modal-title text-dark">Agregar nuevo</h5>
+            </div>
+            <div class="modal-body bg-dark text-white">
+                <form method="POST" action="{% url 'agregarVenta' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!-- Campos del formulario -->
+                    {% for field in form_personal %}
+                    <div class="form-group">
+                        <label>{{ field.label }}</label>
+                        {{ field|add_class:"form-control text-dark" }}
+                        {% for error in field.errors %}
+                        <p class="alarma">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="form-group">
+                        <label for="producto-select">Producto</label>
+                        <select id="producto-select" name="cod_producto" class="form-control">
+                            <option value="">Selecciona un producto</option>
+                            {% for producto in producto %}
+                            <option value="{{ producto.cod_producto }}"> {{ producto.idcategoria_producto }}, Talla {{ producto.idtalla.talla }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    
+
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad</label>
+                        <input type="number" id="cantidad" name="cantidad_productos" min="1" value="1" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precio">Precio Venta</label>
+                        <input type="text" id="precio" name="precio_venta" readonly class="form-control">
+                    </div>
+
+                    <input type="hidden" id="precio_venta_hidden" name="precio_venta" value="">
+                    <input type="hidden" id="precio_venta_total" name="total_venta" value="">
+                  
+                    <input type="hidden" id="productos-seleccionados" name="productos_seleccionados">
+                    <input type="hidden" name="task_data" id="task_data_field"> <!-- Agrega este campo oculto -->
+                    <div class="form-group"></div>
+                        <button type="button" class="btn btn-success" id="agregar-producto" >Agregar producto</button>
+                    </div>  
+
+                   
+
+                    <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            Agregar
+                        </button>
+                    </div>
+                    <ul id="resumen-venta">
+                        <!-- Aquí se mostrará el resumen de la venta -->
+                    </ul>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div id="EliminarPersonalModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <h5 class="modal-title text-dark">Eliminar</h5>
+            </div>
+            <div class="modal-body bg-dark text-white">
+                <p class="labelmodal">¿Estás seguro?</p>
+                <form method="POST" action="{% url 'eliminarVenta' %}">{% csrf_token %}
+                    <input type="hidden" id="id_personal_eliminar" name="id_personal_eliminar">
+            </div>
+            <div class="modal-footer bg-dark text-white">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                   Volver
+                </button>
+                <button type="submit" class="btn btn-success">
+                    Aceptar
+                </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        
+
+        <h3 class="text-center">
+            
+            Ventas
+            <img src="{% static 'index/img/UPIMG.png' %}" alt="Logo" style="width: 50px; height: 50px; display: inline-block; vertical-align: middle; margin-right: 10px;">
+          </h3><! -- Es para cambiar el icono xd -- >
+        <div class="col-md-3 pb-2">
+            <a href="#AgregarPersonalModal"
+                data-toggle="modal" data-dismiss="modal">
+                <button type="button" class="btn btn-success">
+                    Agregar Venta
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+            </a>
+        </div>
+        <div class="card card-body" style="overflow:scroll">
+            <table class="table table-hover table-primary" id="myTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>No. Venta</th>
+                        <th>Fecha de Venta</th>                        
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Descuento</th>
+                        <th>Precio Venta</th>
+                        <th>Total Venta</th>
+                        <th>Cliente</th>
+                        <th>Atendido Por</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody class="text-dark">
+                    {% for i in venta %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{i.idventa}}</td>
+                        <td>{{i.fecha_venta}}</td>
+                        <td>{{i.cod_producto.idcategoria_producto }}, Talla {{ i.cod_producto.idtalla.talla }}</td>
+                        <td>{{i.cantidad_productos}}</td>
+                        <td>{{i.descuento_venta}}</td>
+                        <td>{{i.precio_venta}}</td>
+                        <td>{{i.total_venta}}</td>
+                        <td>{{i.cod_cliente.iddocumento.primer_nombre}} {{i.cod_cliente.iddocumento.primer_apellido}}</td>
+                        <td>{{i.cod_empleado.iddocumento.primer_nombre}} {{i.cod_empleado.iddocumento.primer_apellido}}</td>
+                        <td>
+                           
+                            {% if i.idventa %}
+                                    <form action="/editarVenta/{{ i.idventa }}/" method="GET" style="display: inline;">
+                                        <button type="submit" class="btn btn-dark-outline btn-sm">
+                                            <img src="{% static 'index/img/editar.png' %}" alt="Error" width="30">
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                    <button onclick="eliminarPersonal('{{i.idventa}}')" class="btn btn-dark-outline btn-sm"
+                                    data-toggle="modal" href="#EliminarPersonalModal"><img
+                                        src="{% static 'index/img/delete.png' %}" alt="Error" width="30"></button>
+                            </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% if messages %}
+{% for message in messages %}
+    {% if message.tags == 'error' %}
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error...',
+                text: "{{ message }}",
+            });
+        </script>
+    {% elif message.tags == 'success' %}
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Venta registrada!',
+                text: "{{ message }}",
+            });
+        </script>
+        
+    {% endif %}
+{% endfor %}
+{% endif %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let productoSelect = document.getElementById("producto-select");
+    let cantidadInput = document.getElementById("cantidad");
+    let precioInput = document.getElementById("precio");
+    let resumenVenta = document.getElementById("resumen-venta");
+    let descuento = document.getElementById("id_descuento_porcentaje");
+    let cod_cliente = document.getElementById("id_cod_cliente");
+    let id_cod_empleado = document.getElementById("id_cod_empleado");
+    let form = document.querySelector('form');
+
+    let productosSeleccionados = [];
+
+    
+
+    document.getElementById("agregar-producto").addEventListener("click", function() {
+    let producto = productoSelect.options[productoSelect.selectedIndex].text;
+
+    let precio = precioInput.value;
+    let cantidad = cantidadInput.value;
+
+    let item = document.createElement("li");
+    item.textContent = `Producto: ${producto}, Precio: ${precio}, Cantidad: ${cantidad}`;
+    resumenVenta.appendChild(item);
+
+    // Crear un objeto con los datos del producto para enviar al servidor
+    let productoData = {
+        id: productoSelect.value,
+        
+        cantidad: cantidadInput.value,
+        precio: precio ,// Agregar el precio al objeto productoData
+        descuento: descuento.value,
+        cod_cliente: cod_cliente.value,
+        id_cod_empleado: id_cod_empleado.value
+    };
+
+    // Agregar el objeto productoData al array productosSeleccionados
+    productosSeleccionados.push(productoData);
+
+    // Limpiar los campos
+    productoSelect.value = "";
+
+    cantidadInput.value = "";
+    console.log("Productos seleccionados:", productosSeleccionados);
+    populateTaskData()
+});
+
+
+    document.getElementById("producto-select").addEventListener("change", function() {
+        let productId = this.value;
+        if (productId) {
+            fetch(`/get-precio/${productId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    precioInput.value = data.precio;
+                })
+                .catch(error => {
+                    console.error("Error al obtener el precio:", error);
+                });
+        }
+    });
+
+    cantidadInput.addEventListener("input", function() {
+        actualizarPrecio();
+    });
+
+    function actualizarPrecio() {
+        let productId = productoSelect.value;
+        let cantidad = cantidadInput.value;
+        console.log("productId:", productId);
+        console.log("cantidad:", cantidad);
+        if (productId && cantidad) {
+            fetch(`/calcular-precio/${productId}/${cantidad}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && !isNaN(data.precio)) {
+                        precioInput.value = data.precio.toFixed(2); // Ajusta el valor a dos decimales
+                    } else {
+                        console.error("Respuesta del servidor incorrecta:", data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al obtener el precio:", error);
+                });
+        }
+    }
+
+    function populateTaskData() {
+        const jsonData = JSON.stringify(productosSeleccionados);
+      
+        const taskDataField = document.getElementById("task_data_field");
+        taskDataField.value = jsonData;
+    }
+    
+
+    function agregarVenta() {
+        console.log("juan")
+        console.log(productosSeleccionados);
+        if (productosSeleccionados.length > 0) {
+          $.ajax({
+            url: '/agregar_Venta/',
+            type: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: JSON.stringify({ productos: productosSeleccionados }),
+            success: function(data) {
+              console.log(data);
+              // Maneja la respuesta exitosa del servidor aquí
+            },
+            error: function(error) {
+              console.error('Error al enviar los datos al servidor:', error);
+              // Maneja los errores de la petición aquí
+            }
+          });
+        } else {
+          console.error("No hay productos seleccionados para agregar a la venta.");
+        }
+      }
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+      
+    });
+
+
+
+       
+      
+</script>
+
+{% endblock %}
